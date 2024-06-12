@@ -154,6 +154,10 @@ def launch_setup(context, *args, **kwargs):
         )
     }
 
+    publish_robot_description = {"publish_robot_description": True}
+    publish_robot_description_semantic = {"publish_robot_description_semantic": True}
+    publish_robot_description_kinematics = {"publish_robot_description_kinematics": True} 
+
     # Planning Configuration
     ompl_planning_pipeline_config = {
         "move_group": {
@@ -207,6 +211,9 @@ def launch_setup(context, *args, **kwargs):
             robot_description_semantic,
             robot_description_kinematics,
             robot_description_planning,
+            publish_robot_description, 
+            publish_robot_description_semantic, 
+            publish_robot_description_kinematics,
             ompl_planning_pipeline_config,
             trajectory_execution,
             moveit_controllers,
