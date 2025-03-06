@@ -2,6 +2,35 @@
 Changelog for package ur_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.2 (2025-01-21)
+------------------
+* Update pre-commit the same as on the main branch (`#1232 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1232>`_)
+* Contributors: Felix Exner
+
+2.5.1 (2024-12-21)
+------------------
+
+2.5.0 (2024-12-18)
+------------------
+* Update package maintainers (backport of `#1203 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1203>`_)
+* Forward trajectory controller (backport of `#944 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/944>`_)
+* Contributors: mergify[bot]
+
+2.2.16 (2024-10-28)
+-------------------
+
+2.2.15 (2024-07-26)
+-------------------
+
+2.2.14 (2024-07-01)
+-------------------
+
+2.2.13 (2024-06-17)
+-------------------
+* Simplify launch file for ur_bringup pkg (`#1004 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1004>`_)
+* Add calibration file to launch arguments (`#1001 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1001>`_)
+* Contributors: Vincenzo Di Pentima
+
 2.2.12 (2024-05-16)
 -------------------
 
@@ -64,7 +93,7 @@ Changelog for package ur_bringup
 * Update MoveIt file for working with simulation. (`#278 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/278>`_)
 * Start the tool communication script if the flag is set (`#267 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/267>`_)
 * Used ``spawner`` instead of ``spanwer.py`` in launch files (`#293 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/293>`_)
-* Do not start dashboard client if FakeHardware simuation is used. (`#286 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/286>`_)
+* Do not start dashboard client if FakeHardware simulation is used. (`#286 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/286>`_)
 * Use scaled trajectory controller per default. (`#287 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/287>`_)
 * Separate control node (`#281 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/281>`_)
 * Fix launch file arguments. (`#243 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/243>`_)

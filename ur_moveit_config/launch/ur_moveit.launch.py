@@ -38,20 +38,25 @@ from ur_moveit_config.launch_common import load_yaml
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import (
+    Command,
+    FindExecutable,
+    LaunchConfiguration,
+    PathJoinSubstitution,
+)
 
 
 def launch_setup(context, *args, **kwargs):
 
     # Initialize Arguments
     ur_type = LaunchConfiguration("ur_type")
-    use_fake_hardware = LaunchConfiguration("use_fake_hardware")
     safety_limits = LaunchConfiguration("safety_limits")
     safety_pos_margin = LaunchConfiguration("safety_pos_margin")
     safety_k_position = LaunchConfiguration("safety_k_position")
     # General arguments
     description_package = LaunchConfiguration("description_package")
     description_file = LaunchConfiguration("description_file")
+    _publish_robot_description_semantic = LaunchConfiguration("publish_robot_description_semantic")
     moveit_config_package = LaunchConfiguration("moveit_config_package")
     moveit_joint_limits_file = LaunchConfiguration("moveit_joint_limits_file")
     moveit_config_file = LaunchConfiguration("moveit_config_file")
@@ -143,6 +148,10 @@ def launch_setup(context, *args, **kwargs):
     )
     robot_description_semantic = {"robot_description_semantic": robot_description_semantic_content}
 
+    publish_robot_description_semantic = {
+        "publish_robot_description_semantic": _publish_robot_description_semantic
+    }
+
     robot_description_kinematics = PathJoinSubstitution(
         [FindPackageShare(moveit_config_package), "config", "kinematics.yaml"]
     )
@@ -172,7 +181,7 @@ def launch_setup(context, *args, **kwargs):
     # Trajectory Execution Configuration
     controllers_yaml = load_yaml("ur_moveit_config", "config/controllers.yaml")
     # the scaled_joint_trajectory_controller does not work on fake hardware
-    change_controllers = context.perform_substitution(use_fake_hardware)
+    change_controllers = context.perform_substitution(use_sim_time)
     if change_controllers == "true":
         controllers_yaml["scaled_joint_trajectory_controller"]["default"] = False
         controllers_yaml["joint_trajectory_controller"]["default"] = True
@@ -187,6 +196,8 @@ def launch_setup(context, *args, **kwargs):
         "trajectory_execution.allowed_execution_duration_scaling": 1.2,
         "trajectory_execution.allowed_goal_duration_margin": 0.5,
         "trajectory_execution.allowed_start_tolerance": 0.01,
+        # Execution time monitoring can be incompatible with the scaled JTC
+        "trajectory_execution.execution_duration_monitoring": False,
     }
 
     planning_scene_monitor_parameters = {
@@ -209,6 +220,7 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             robot_description,
             robot_description_semantic,
+            publish_robot_description_semantic,
             robot_description_kinematics,
             robot_description_planning,
             publish_robot_description, 
@@ -241,6 +253,9 @@ def launch_setup(context, *args, **kwargs):
             robot_description_kinematics,
             robot_description_planning,
             warehouse_ros_config,
+            {
+                "use_sim_time": use_sim_time,
+            },
         ],
     )
 
@@ -273,13 +288,6 @@ def generate_launch_description():
             "ur_type",
             description="Type/series of used UR robot.",
             choices=["ur3", "ur3e", "ur5", "ur5e", "ur10", "ur10e", "ur16e", "ur20", "ur30"],
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "use_fake_hardware",
-            default_value="false",
-            description="Indicate whether robot is running with fake hardware mirroring command to its states.",
         )
     )
     declared_arguments.append(
@@ -317,6 +325,13 @@ def generate_launch_description():
             "description_file",
             default_value="ur.urdf.xacro",
             description="URDF/XACRO description file with the robot.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "publish_robot_description_semantic",
+            default_value="True",
+            description="Whether to publish the SRDF description on topic /robot_description_semantic.",
         )
     )
     declared_arguments.append(

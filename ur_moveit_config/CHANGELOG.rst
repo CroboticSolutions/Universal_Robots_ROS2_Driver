@@ -2,6 +2,37 @@
 Changelog for package ur_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.2 (2025-01-21)
+------------------
+* ur_moveit_config: Do not change default controller when using fake hardware (`#1237 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1237>`_)
+* Contributors: Felix Exner
+
+2.5.1 (2024-12-21)
+------------------
+
+2.5.0 (2024-12-18)
+------------------
+* Update package maintainers (backport of `#1203 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1203>`_)
+* Contributors: mergify[bot]
+
+2.2.16 (2024-10-28)
+-------------------
+* Properly handle use_sim_time (`#1146 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1146>`_) (`#1159 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1159>`_)
+* Disable execution_duration_monitoring by default (`#1133 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1133>`_)
+* Added option to publish SRDF file.
+* Contributors: Felix Exner, mergify[bot], v-marsh
+
+2.2.15 (2024-07-26)
+-------------------
+
+2.2.14 (2024-07-01)
+-------------------
+
+2.2.13 (2024-06-17)
+-------------------
+* Add servo node config to disable advertising /get_planning_scene (backport of `#990 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/990>`_)
+* Contributors: Ruddick Lawrence
+
 2.2.12 (2024-05-16)
 -------------------
 * Define default maximum accelerations for MoveIt (backport of `#645 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/645>`_)

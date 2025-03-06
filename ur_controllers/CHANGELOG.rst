@@ -2,6 +2,44 @@
 Changelog for package ur_controllers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.5.2 (2025-01-21)
+------------------
+* Update pre-commit the same as on the main branch (`#1232 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1232>`_)
+* Contributors: Felix Exner
+
+2.5.1 (2024-12-21)
+------------------
+* Add missing test dependencies for ur_controllers (backport of `#1215 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1215>`_)
+* Contributors: mergify[bot]
+
+2.5.0 (2024-12-18)
+------------------
+* Freedrive Controller (`#1114 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1114>`_) (`#1211 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1211>`_)
+* Add force mode controller (`#1049 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1049>`_) (`#1193 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1193>`_)
+* Update package maintainers (backport of `#1203 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1203>`_)
+* Forward trajectory controller (backport of `#944 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/944>`_)
+* [SJTC] Make scaling interface optional (`#1145 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1145>`_) (`#1172 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1172>`_)
+* Contributors: mergify[bot]
+
+2.2.16 (2024-10-28)
+-------------------
+* Allow setting the analog output domain when setting an analog output (backport of `#1123 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1123>`_)
+* Service to get software version of robot (backport of `#964 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/964>`_)
+* Contributors: mergify[bot], Felix Enxer, Jacob Larsen
+
+2.2.15 (2024-07-26)
+-------------------
+* Updated scaled JTC to latest upstream updates (`#1067 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1067>`_)
+* Contributors: Felix Exner (fexner)
+
+2.2.14 (2024-07-01)
+-------------------
+
+2.2.13 (2024-06-17)
+-------------------
+* this simple fix should fix the goal time violated issue (backport of `#882 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/882>`_)
+* Contributors: Lennart Nachtigall
+
 2.2.12 (2024-05-16)
 -------------------
 * Use latched publishing for robot_mode and safety_mode (`#991 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/991>`_)
@@ -54,7 +92,7 @@ Changelog for package ur_controllers
 * Adapt ros control api (`#448 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/448>`_)
   * scaled jtc: Use get_interface_name instead of get_name
   * Migrate from stopped controllers to inactive controllers
-  stopped controllers has been depreated upstream
+  stopped controllers has been deprecated upstream
 * Contributors: Felix Exner
 
 2.2.2 (2022-07-19)
