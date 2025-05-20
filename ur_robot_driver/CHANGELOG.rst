@@ -1,3 +1,23 @@
+2.7.0 (2025-04-10)
+------------------
+* Start executing passthrough trajectories earlier than all points are transferred. (backport of `#1313 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1313>`_) (`#1335 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1335>`_)
+* Support PolyScopeX robots (backport of `#1318 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1318>`_) (`#1333 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1333>`_)
+* Add support for UR7e and UR12e (`#1332 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1332>`_)
+* Use UrDriverConfig struct to initialize UrDriver (backport of `#1328 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1328>`_) (`#1330 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1330>`_)
+* Fix passthrough controller to not read non-existing state_interfaces (`#1314 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1314>`_) (`#1316 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1316>`_)
+* Contributors: mergify[bot]
+
+2.6.0 (2025-03-17)
+------------------
+* Update transformForceTorque to handle whether it is a cb3 or an e-Series robot (backport of `#1287 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1287>`_) (`#1299 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1299>`_)
+* Port robot_state_helper to ROS2 (backport of  `#933 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/933>`_) (`#1286 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1286>`_)
+* Fix crashes on shutting down (`#1270 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1270>`_) (`#1271 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1271>`_)
+* Remove build warnings for Humble (`#1234 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1234>`_)
+* Auto-update pre-commit hooks (backport `#1260 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1260>`_) (`#1261 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1261>`_)
+* Fix doc links (`#1247 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1247>`_)
+* Remove urdf folder (`#1257 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1257>`_)
+* Contributors: Felix Exner, mergify[bot]
+
 2.5.2 (2025-01-21)
 ------------------
 * Check quaternions for equal dot_product instead of comparing their components individually (backport `#1238 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1238>`_) (`#1243 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1243>`_)

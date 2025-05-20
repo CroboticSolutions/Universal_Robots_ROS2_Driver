@@ -2,6 +2,18 @@
 Changelog for package ur_controllers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.7.0 (2025-04-10)
+------------------
+* Start executing passthrough trajectories earlier than all points are transferred. (backport of `#1313 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1313>`_) (`#1335 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1335>`_)
+* Fix passthrough controller to not read non-existing state_interfaces (`#1314 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1314>`_) (`#1316 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1316>`_)
+* Contributors: mergify[bot]
+
+2.6.0 (2025-03-17)
+------------------
+* ur_controllers: doc -- Fix link to index page of driver (backport of `#1284 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1284>`_) (`#1285 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1285>`_)
+* Remove build warnings for Humble (`#1234 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1234>`_)
+* Contributors: Felix Exner, mergify[bot]
+
 2.5.2 (2025-01-21)
 ------------------
 * Update pre-commit the same as on the main branch (`#1232 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1232>`_)

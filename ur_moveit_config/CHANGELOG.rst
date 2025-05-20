@@ -2,6 +2,14 @@
 Changelog for package ur_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.7.0 (2025-04-10)
+------------------
+* Add support for UR7e and UR12e (`#1332 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1332>`_)
+* Contributors: mergify[bot]
+
+2.6.0 (2025-03-17)
+------------------
+
 2.5.2 (2025-01-21)
 ------------------
 * ur_moveit_config: Do not change default controller when using fake hardware (`#1237 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1237>`_)

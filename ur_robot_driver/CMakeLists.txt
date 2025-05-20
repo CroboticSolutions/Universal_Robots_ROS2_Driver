@@ -113,6 +113,7 @@ ament_target_dependencies(controller_stopper_node ${${PROJECT_NAME}_EXPORTED_TAR
 add_executable(robot_state_helper
   src/robot_state_helper.cpp
   src/robot_state_helper_node.cpp
+  src/urcl_log_handler.cpp
 )
 target_link_libraries(robot_state_helper ur_client_library::urcl)
 ament_target_dependencies(robot_state_helper ${${PROJECT_NAME}_EXPORTED_TARGETS} ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -220,6 +221,10 @@ if(BUILD_TESTING)
     add_launch_test(test/urscript_interface.py
       TIMEOUT
         500
+    )
+    add_launch_test(test/integration_test_tool_contact.py
+      TIMEOUT
+        800
     )
   endif()
 endif()
