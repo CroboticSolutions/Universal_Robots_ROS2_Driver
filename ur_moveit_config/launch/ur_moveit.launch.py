@@ -179,7 +179,6 @@ def launch_setup(context, *args, **kwargs):
         },
         "pilz_industrial_motion_planner": {
             "planning_plugin": "pilz_industrial_motion_planner/CommandPlanner",
-            "request_adapters": "default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/ResolveConstraintFrames default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints",
         },
     }
 
@@ -187,8 +186,11 @@ def launch_setup(context, *args, **kwargs):
     _ompl_yaml = load_yaml("ur_moveit_config", "config/ompl_planning.yaml")
     planning_pipeline["ompl"].update(_ompl_yaml)
 
-    pilz_limits_yaml = load_yaml("ur_moveit_config", "config/pilz_cartesian_limits.yaml")
-
+    _pilz_yaml = load_yaml("ur_moveit_config", "config/pilz_industrial_motion_planner_planning.yaml")
+    _pilz_limits_yaml = load_yaml("ur_moveit_config", "config/pilz_cartesian_limits.yaml")
+    
+    planning_pipeline["pilz_industrial_motion_planner"].update(_pilz_yaml)
+    planning_pipeline["pilz_industrial_motion_planner"].update(_pilz_limits_yaml)
     
     # Trajectory Execution Configuration
     controllers_yaml = load_yaml("ur_moveit_config", "config/controllers.yaml")
@@ -230,6 +232,7 @@ def launch_setup(context, *args, **kwargs):
         executable="move_group",
         output="screen",
         parameters=[
+            planning_pipeline,
             robot_description,
             robot_description_semantic,
             publish_robot_description_semantic,
@@ -238,8 +241,6 @@ def launch_setup(context, *args, **kwargs):
             publish_robot_description, 
             publish_robot_description_semantic, 
             publish_robot_description_kinematics,
-            planning_pipeline,
-            pilz_limits_yaml,
             trajectory_execution,
             moveit_controllers,
             planning_scene_monitor_parameters,
