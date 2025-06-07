@@ -167,17 +167,29 @@ def launch_setup(context, *args, **kwargs):
     publish_robot_description_semantic = {"publish_robot_description_semantic": True}
     publish_robot_description_kinematics = {"publish_robot_description_kinematics": True} 
 
-    # Planning Configuration
-    ompl_planning_pipeline_config = {
-        "move_group": {
+    planning_pipeline = {
+        "planning_pipelines": ["ompl", "pilz_industrial_motion_planner"],
+        "default_planning_pipeline": "pilz_industrial_motion_planner",
+        "ompl": {
             "planning_plugin": "ompl_interface/OMPLPlanner",
-            "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
-            "start_state_max_bounds_error": 0.1,
-        }
+            # TODO: Re-enable `default_planner_request_adapters/AddRuckigTrajectorySmoothing` once its issues are resolved
+            "request_adapters": "default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/ResolveConstraintFrames default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints",
+            # TODO: Reduce start_state_max_bounds_error once spawning with specific joint configuration is enabled
+            "start_state_max_bounds_error": 0.31416,
+        },
+        "pilz_industrial_motion_planner": {
+            "planning_plugin": "pilz_industrial_motion_planner/CommandPlanner",
+            "request_adapters": "default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/ResolveConstraintFrames default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints",
+        },
     }
-    ompl_planning_yaml = load_yaml("ur_moveit_config", "config/ompl_planning.yaml")
-    ompl_planning_pipeline_config["move_group"].update(ompl_planning_yaml)
 
+    # Load the planning pipeline configuration 
+    _ompl_yaml = load_yaml("ur_moveit_config", "config/ompl_planning.yaml")
+    planning_pipeline["ompl"].update(_ompl_yaml)
+
+    pilz_limits_yaml = load_yaml("ur_moveit_config", "config/pilz_cartesian_limits.yaml")
+
+    
     # Trajectory Execution Configuration
     controllers_yaml = load_yaml("ur_moveit_config", "config/controllers.yaml")
     # the scaled_joint_trajectory_controller does not work on fake hardware
@@ -226,7 +238,8 @@ def launch_setup(context, *args, **kwargs):
             publish_robot_description, 
             publish_robot_description_semantic, 
             publish_robot_description_kinematics,
-            ompl_planning_pipeline_config,
+            planning_pipeline,
+            pilz_limits_yaml,
             trajectory_execution,
             moveit_controllers,
             planning_scene_monitor_parameters,
@@ -249,7 +262,7 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             robot_description,
             robot_description_semantic,
-            ompl_planning_pipeline_config,
+            planning_pipeline,
             robot_description_kinematics,
             robot_description_planning,
             warehouse_ros_config,
