@@ -163,6 +163,10 @@ def launch_setup(context, *args, **kwargs):
         )
     }
 
+    # Add cartesian limits to the robot description planning
+    # https://moveit.picknik.ai/main/doc/how_to_guides/pilz_industrial_motion_planner/pilz_industrial_motion_planner.html
+    robot_description_planning["robot_description_planning"].update(load_yaml("ur_moveit_config", "config/pilz_cartesian_limits.yaml"))
+
     publish_robot_description = {"publish_robot_description": True}
     publish_robot_description_semantic = {"publish_robot_description_semantic": True}
     publish_robot_description_kinematics = {"publish_robot_description_kinematics": True} 
@@ -186,12 +190,9 @@ def launch_setup(context, *args, **kwargs):
     _ompl_yaml = load_yaml("ur_moveit_config", "config/ompl_planning.yaml")
     planning_pipeline["ompl"].update(_ompl_yaml)
 
-    _pilz_yaml = load_yaml("ur_moveit_config", "config/pilz_industrial_motion_planner_planning.yaml")
-    _pilz_limits_yaml = load_yaml("ur_moveit_config", "config/pilz_cartesian_limits.yaml")
-    
+    _pilz_yaml = load_yaml("ur_moveit_config", "config/pilz_industrial_motion_planner_planning.yaml")    
     planning_pipeline["pilz_industrial_motion_planner"].update(_pilz_yaml)
-    planning_pipeline["pilz_industrial_motion_planner"].update(_pilz_limits_yaml)
-    
+
     # Trajectory Execution Configuration
     controllers_yaml = load_yaml("ur_moveit_config", "config/controllers.yaml")
     # the scaled_joint_trajectory_controller does not work on fake hardware
@@ -232,12 +233,12 @@ def launch_setup(context, *args, **kwargs):
         executable="move_group",
         output="screen",
         parameters=[
-            planning_pipeline,
             robot_description,
             robot_description_semantic,
             publish_robot_description_semantic,
             robot_description_kinematics,
             robot_description_planning,
+            planning_pipeline,
             publish_robot_description, 
             publish_robot_description_semantic, 
             publish_robot_description_kinematics,
