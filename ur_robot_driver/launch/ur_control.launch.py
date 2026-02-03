@@ -29,6 +29,8 @@
 #
 # Author: Denis Stogl
 
+import os
+
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -52,6 +54,7 @@ def launch_setup(context):
     # Initialize Arguments
     ur_type = LaunchConfiguration("ur_type")
     robot_ip = LaunchConfiguration("robot_ip")
+    namespace = LaunchConfiguration("namespace")
     # General arguments
     controllers_file = LaunchConfiguration("controllers_file")
     description_launchfile = LaunchConfiguration("description_launchfile")
@@ -66,12 +69,37 @@ def launch_setup(context):
     use_tool_communication = LaunchConfiguration("use_tool_communication")
     tool_device_name = LaunchConfiguration("tool_device_name")
     tool_tcp_port = LaunchConfiguration("tool_tcp_port")
+    update_rate_config_file = LaunchConfiguration("update_rate_config_file")
+    
+    # Get namespace value
+    namespace_value = namespace.perform(context)
+    namespace_str = namespace_value if namespace_value else ""
 
+    # Construct update_rate_config_file path if not provided
+    update_rate_file_value = update_rate_config_file.perform(context)
+    if not update_rate_file_value or update_rate_file_value == "":
+        from ament_index_python.packages import get_package_share_directory
+        ur_type_value = ur_type.perform(context)
+        update_rate_file_value = os.path.join(
+            get_package_share_directory("ur_robot_driver"),
+            "config",
+            f"{ur_type_value}_update_rate.yaml"
+        )
+
+    # When using namespace, controller_manager expects parameters in its namespace
+    # Solution: Use wildcard notation /**: in YAML file to support namespaces
+    # The YAML file (ur_controllers.yaml) uses /**: { controller_manager: { ros__parameters: {...} } }
+    # This allows ParameterFile to load parameters correctly in any namespace.
+    # 
+    # Reference: This is a known ROS 2 issue where ParameterFile doesn't properly load
+    # parameters with wrapper structure (controller_manager: { ros__parameters: {...} }) in namespaces.
+    # The wildcard notation /**: is the recommended workaround.
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
+        namespace=namespace,
         parameters=[
-            LaunchConfiguration("update_rate_config_file"),
+            update_rate_file_value,
             ParameterFile(controllers_file, allow_substs=True),
             # We use the tf_prefix as substitution in there, so that's why we keep it as an
             # argument for this launchfile
@@ -90,6 +118,7 @@ def launch_setup(context):
         ),
         launch_arguments={
             "robot_ip": robot_ip,
+            "namespace": namespace,
         }.items(),
     )
 
@@ -97,6 +126,7 @@ def launch_setup(context):
         package="ur_robot_driver",
         executable="robot_state_helper",
         name="ur_robot_state_helper",
+        namespace=namespace,
         output="screen",
         condition=UnlessCondition(use_mock_hardware),
         parameters=[
@@ -110,6 +140,7 @@ def launch_setup(context):
         condition=IfCondition(use_tool_communication),
         executable="tool_communication.py",
         name="ur_tool_comm",
+        namespace=namespace,
         output="screen",
         parameters=[
             {
@@ -123,6 +154,7 @@ def launch_setup(context):
     urscript_interface = Node(
         package="ur_robot_driver",
         executable="urscript_interface",
+        namespace=namespace,
         parameters=[{"robot_ip": robot_ip}],
         output="screen",
         condition=UnlessCondition(use_mock_hardware),
@@ -132,6 +164,7 @@ def launch_setup(context):
         package="ur_robot_driver",
         executable="controller_stopper_node",
         name="controller_stopper",
+        namespace=namespace,
         output="screen",
         emulate_tty=True,
         condition=UnlessCondition(use_mock_hardware),
@@ -164,6 +197,7 @@ def launch_setup(context):
         package="ur_robot_driver",
         executable="trajectory_until_node",
         name="trajectory_until_node",
+        namespace=namespace,
         output="screen",
         parameters=[
             {
@@ -175,12 +209,19 @@ def launch_setup(context):
     # Spawn controllers
     def controller_spawner(controllers, active=True):
         inactive_flags = ["--inactive"] if not active else []
+        # When spawner has a namespace, use relative path for controller_manager
+        # This avoids double namespace (e.g., /ur_left/ur_left/controller_manager)
+        if namespace_str:
+            controller_manager_service = "controller_manager"  # Relative path within namespace
+        else:
+            controller_manager_service = "/controller_manager"  # Absolute path
         return Node(
             package="controller_manager",
             executable="spawner",
+            namespace=namespace,
             arguments=[
                 "--controller-manager",
-                "/controller_manager",
+                controller_manager_service,
                 "--controller-manager-timeout",
                 controller_spawner_timeout,
             ]
@@ -219,11 +260,21 @@ def launch_setup(context):
         controller_spawner(controllers_inactive, active=False),
     ]
 
+    # Build robot_description topic name with namespace
+    # Note: robot_description is usually a global parameter, but we can remap it if needed
+    robot_description_topic = f"{namespace_str}/robot_description" if namespace_str else "/robot_description"
+    
+    # Get namespace value to determine robot_description parameter name
+    namespace_value = namespace.perform(context)
+    robot_desc_param = f"{namespace_value}_robot_description" if namespace_value else "robot_description"
+    
     rsp = IncludeLaunchDescription(
         AnyLaunchDescriptionSource(description_launchfile),
         launch_arguments={
             "robot_ip": robot_ip,
             "ur_type": ur_type,
+            "namespace": namespace,
+            "robot_description_param": robot_desc_param,
         }.items(),
     )
 
@@ -502,17 +553,16 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             name="update_rate_config_file",
-            default_value=[
-                PathJoinSubstitution(
-                    [
-                        FindPackageShare("ur_robot_driver"),
-                        "config",
-                    ]
-                ),
-                "/",
-                LaunchConfiguration("ur_type"),
-                "_update_rate.yaml",
-            ],
+            default_value="",
+            description="Path to update rate config file. If empty, auto-generates from ur_type.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="namespace",
+            default_value="",
+            description="Namespace for all nodes and topics. Useful for multi-robot setups. "
+            "If empty, nodes will use global namespace.",
         )
     )
     return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])

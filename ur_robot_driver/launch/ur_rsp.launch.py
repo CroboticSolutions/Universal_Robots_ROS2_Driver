@@ -34,7 +34,7 @@ from launch_ros.substitutions import FindPackageShare
 from launch_ros.parameter_descriptions import ParameterValue
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import (
     Command,
     FindExecutable,
@@ -43,9 +43,11 @@ from launch.substitutions import (
 )
 
 
-def generate_launch_description():
+def launch_setup(context):
     ur_type = LaunchConfiguration("ur_type")
     robot_ip = LaunchConfiguration("robot_ip")
+    namespace = LaunchConfiguration("namespace")
+    robot_description_param = LaunchConfiguration("robot_description_param")
     safety_limits = LaunchConfiguration("safety_limits")
     safety_pos_margin = LaunchConfiguration("safety_pos_margin")
     safety_k_position = LaunchConfiguration("safety_k_position")
@@ -186,9 +188,21 @@ def generate_launch_description():
             " ",
         ]
     )
+    # Get namespace and robot_description_param values
+    namespace_value = namespace.perform(context)
+    robot_desc_param_value = robot_description_param.perform(context) if robot_description_param.perform(context) else "robot_description"
+    
+    # robot_state_publisher node always expects "robot_description" parameter
+    # But we can set it as a global parameter with custom name if needed
+    # For now, we'll set both: the custom name (for multi-arm) and the standard name (for the node)
     robot_description = {
         "robot_description": ParameterValue(robot_description_content, value_type=str)
     }
+    
+    # If we have a custom robot_description_param name, we also set that as a parameter
+    # This allows other nodes to access it by the custom name
+    if robot_desc_param_value != "robot_description":
+        robot_description[robot_desc_param_value] = ParameterValue(robot_description_content, value_type=str)
 
     declared_arguments = []
     # UR specific arguments
@@ -442,15 +456,302 @@ def generate_launch_description():
             description="Port that will be opened for trajectory control.",
         )
     )
-
-    return LaunchDescription(
-        declared_arguments
-        + [
-            Node(
-                package="robot_state_publisher",
-                executable="robot_state_publisher",
-                output="both",
-                parameters=[robot_description],
-            ),
-        ]
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "namespace",
+            default_value="",
+            description="Namespace for the robot_state_publisher node. Useful for multi-robot setups.",
+        )
     )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_description_param",
+            default_value="robot_description",
+            description="Name of the robot_description parameter. Useful for multi-robot setups where each robot needs a different parameter name (e.g., ur_left_robot_description).",
+        )
+    )
+    
+    # Get namespace value for node
+    namespace_value = namespace.perform(context)
+    
+    nodes = [
+        Node(
+            package="robot_state_publisher",
+            executable="robot_state_publisher",
+            namespace=namespace if namespace_value else None,
+            output="both",
+            parameters=[robot_description],
+        ),
+    ]
+    
+    return nodes
+
+def generate_launch_description():
+    declared_arguments = []
+    # UR specific arguments
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "ur_type",
+            description="Typo/series of used UR robot.",
+            choices=[
+                "ur3",
+                "ur5",
+                "ur10",
+                "ur3e",
+                "ur5e",
+                "ur7e",
+                "ur10e",
+                "ur12e",
+                "ur16e",
+                "ur8long",
+                "ur15",
+                "ur18",
+                "ur20",
+                "ur30",
+            ],
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_ip", description="IP address by which the robot can be reached."
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "safety_limits",
+            default_value="true",
+            description="Enables the safety limits controller if true.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "safety_pos_margin",
+            default_value="0.15",
+            description="The margin to lower and upper limits in the safety controller.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "safety_k_position",
+            default_value="20",
+            description="k-position factor in the safety controller.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "joint_limit_params_file",
+            default_value=PathJoinSubstitution(
+                [
+                    FindPackageShare("ur_description"),
+                    "config",
+                    LaunchConfiguration("ur_type"),
+                    "joint_limits.yaml",
+                ]
+            ),
+            description="Config file containing the joint limits (e.g. velocities, positions) of the robot.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "kinematics_params_file",
+            default_value=PathJoinSubstitution(
+                [
+                    FindPackageShare("ur_description"),
+                    "config",
+                    LaunchConfiguration("ur_type"),
+                    "default_kinematics.yaml",
+                ]
+            ),
+            description="The calibration configuration of the actual robot used.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "physical_params_file",
+            default_value=PathJoinSubstitution(
+                [
+                    FindPackageShare("ur_description"),
+                    "config",
+                    LaunchConfiguration("ur_type"),
+                    "physical_parameters.yaml",
+                ]
+            ),
+            description="Config file containing the physical parameters (e.g. masses, inertia) of the robot.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "visual_params_file",
+            default_value=PathJoinSubstitution(
+                [
+                    FindPackageShare("ur_description"),
+                    "config",
+                    LaunchConfiguration("ur_type"),
+                    "visual_parameters.yaml",
+                ]
+            ),
+            description="Config file containing the visual parameters (e.g. meshes) of the robot.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "description_file",
+            default_value=PathJoinSubstitution(
+                [FindPackageShare("ur_robot_driver"), "urdf", "ur.urdf.xacro"]
+            ),
+            description="URDF/XACRO description file with the robot.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "tf_prefix",
+            default_value="",
+            description="tf_prefix of the joint names, useful for "
+            "multi-robot setup. If changed, also joint names in the controllers' configuration "
+            "have to be updated.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_mock_hardware",
+            default_value="false",
+            description="Start robot with mock hardware mirroring command to its states.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "mock_sensor_commands",
+            default_value="false",
+            description="Enable mock command interfaces for sensors used for simple simulations. "
+            "Only used if 'use_mock_hardware' parameter is true.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "headless_mode",
+            default_value="false",
+            description="Enable headless mode for robot control",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_tool_communication",
+            default_value="false",
+            description="Only available for e series!",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "tool_parity",
+            default_value="0",
+            description="Parity configuration for serial communication. Only effective, if "
+            "use_tool_communication is set to True.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "tool_baud_rate",
+            default_value="115200",
+            description="Baud rate configuration for serial communication. Only effective, if "
+            "use_tool_communication is set to True.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "tool_stop_bits",
+            default_value="1",
+            description="Stop bits configuration for serial communication. Only effective, if "
+            "use_tool_communication is set to True.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "tool_rx_idle_chars",
+            default_value="1.5",
+            description="RX idle chars configuration for serial communication. Only effective, "
+            "if use_tool_communication is set to True.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "tool_tx_idle_chars",
+            default_value="3.5",
+            description="TX idle chars configuration for serial communication. Only effective, if "
+            "use_tool_communication is set to True.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "tool_device_name",
+            default_value="/tmp/ttyUR",
+            description="File descriptor that will be generated for the tool communication device. "
+            "The user has be be allowed to write to this location. "
+            "Only effective, if use_tool_communication is set to True.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "tool_tcp_port",
+            default_value="54321",
+            description="Remote port that will be used for bridging the tool's serial device. "
+            "Only effective, if use_tool_communication is set to True.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "tool_voltage",
+            default_value="0",  # 0 being a conservative value that won't destroy anything
+            description="Tool voltage that will be setup.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "reverse_ip",
+            default_value="0.0.0.0",
+            description="IP that will be used for the robot controller to communicate back to the driver.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "script_command_port",
+            default_value="50004",
+            description="Port that will be opened to forward URScript commands to the robot.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "reverse_port",
+            default_value="50001",
+            description="Port that will be opened to send cyclic instructions from the driver to the robot controller.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "script_sender_port",
+            default_value="50002",
+            description="The driver will offer an interface to query the external_control URScript on this port.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "trajectory_port",
+            default_value="50003",
+            description="Port that will be opened for trajectory control.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "namespace",
+            default_value="",
+            description="Namespace for the robot_state_publisher node. Useful for multi-robot setups.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_description_param",
+            default_value="robot_description",
+            description="Name of the robot_description parameter. Useful for multi-robot setups where each robot needs a different parameter name (e.g., ur_left_robot_description).",
+        )
+    )
+    
+    return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])
