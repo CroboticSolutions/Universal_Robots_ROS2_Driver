@@ -71,6 +71,7 @@ def launch_setup(context, *args, **kwargs):
     robot_namespace = LaunchConfiguration("robot_namespace")
     robot_description_topic = LaunchConfiguration("robot_description_topic")
     robot_model_name = LaunchConfiguration("robot_model_name")
+    semantic_description_file = LaunchConfiguration("semantic_description_file")
     rviz_config_file = LaunchConfiguration("rviz_config_file")
     launch_rviz_value = launch_rviz.perform(context)
     ur_type_value = ur_type.perform(context)
@@ -81,6 +82,7 @@ def launch_setup(context, *args, **kwargs):
     )
     robot_description_topic_value = robot_description_topic.perform(context)
     robot_model_name_value = robot_model_name.perform(context)
+    semantic_description_file_value = semantic_description_file.perform(context)
     rviz_config_file_value = rviz_config_file.perform(context)
     robot_namespace_value = robot_namespace.perform(context).strip("/")
 
@@ -94,7 +96,7 @@ def launch_setup(context, *args, **kwargs):
     moveit_config = (
         MoveItConfigsBuilder(robot_name=robot_model_name_value, package_name="ur_moveit_config")
         .robot_description_semantic(
-            Path("srdf") / "ur.srdf.xacro",
+            Path(semantic_description_file_value),
             {"name": robot_model_name_value},
         )
         .to_moveit_configs()
@@ -238,6 +240,11 @@ def generate_launch_description():
             "robot_model_name",
             default_value="ur",
             description="Robot model name used by MoveIt URDF/SRDF.",
+        ),
+        DeclareLaunchArgument(
+            "semantic_description_file",
+            default_value="srdf/ur.srdf.xacro",
+            description="SRDF xacro path relative to ur_moveit_config share (e.g. srdf/ur_robotiq.srdf.xacro).",
         ),
         DeclareLaunchArgument(
             "rviz_config_file",
