@@ -6,7 +6,9 @@
   <xacro:include filename="$(find ur_moveit_config)/srdf/ur_macro.srdf.xacro"/>
   <xacro:include filename="$(find ur_moveit_config)/srdf/ur_robotiq_disable_collisions.srdf.xacro"/>
 
-  <xacro:ur_srdf tip_link="robotiq_85_left_finger_tip_link" add_gripper_states="true"/>
+  <!-- Chain must end at tool0 so trajectories use only the 6 arm joints (scaled_joint_trajectory_controller).
+       The gripper joint is driven by robotiq_gripper_controller (GripperAction), not FollowJointTrajectory. -->
+  <xacro:ur_srdf tip_link="tool0" add_gripper_states="false"/>
   <xacro:ur_robotiq_disable_collisions/>
 
 </robot>

@@ -29,6 +29,7 @@
 #
 # Author: Felix Exner
 import os
+import tempfile
 import yaml
 
 from pathlib import Path
@@ -85,6 +86,41 @@ def launch_setup(context, *args, **kwargs):
     semantic_description_file_value = semantic_description_file.perform(context)
     rviz_config_file_value = rviz_config_file.perform(context)
     robot_namespace_value = robot_namespace.perform(context).strip("/")
+
+    # Saved moveit.rviz assumes move_group at /. In namespaced multi-robot setups, Motion Planning
+    # must use e.g. "/ur1" or it shows "No planning library loaded". Trajectory topic must not be
+    # absolute /display_planned_path when the display runs under /ur1/...
+    if robot_namespace_value and launch_rviz_value.lower() == "true":
+        src_rviz = os.path.expanduser(rviz_config_file_value)
+        if os.path.isfile(src_rviz):
+            ns_abs = f"/{robot_namespace_value}"
+            fd, tmp_path = tempfile.mkstemp(
+                prefix=f"moveit_rviz_{robot_namespace_value}_", suffix=".rviz"
+            )
+            os.close(fd)
+            try:
+                with open(src_rviz, encoding="utf-8") as file:
+                    content = file.read()
+                if 'Move Group Namespace: ""' in content:
+                    content = content.replace(
+                        'Move Group Namespace: ""',
+                        f'Move Group Namespace: "{ns_abs}"',
+                        1,
+                    )
+                content = content.replace(
+                    "Trajectory Topic: /display_planned_path",
+                    "Trajectory Topic: display_planned_path",
+                    1,
+                )
+                with open(tmp_path, "w", encoding="utf-8") as file:
+                    file.write(content)
+                rviz_config_file_value = tmp_path
+            except OSError:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+                raise
 
     if robot_namespace_value:
         namespaced_warehouse_path = os.path.expanduser(

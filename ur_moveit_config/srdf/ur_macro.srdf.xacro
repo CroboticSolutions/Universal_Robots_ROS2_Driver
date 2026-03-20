@@ -47,6 +47,18 @@
         <joint name="robotiq_85_left_knuckle_joint" value="0" />
       </xacro:if>
     </group_state>
+    <!--gripper_test: RViz goal state in deg: pan -54, lift -137, elbow 132, w1 -170, w2 -38, w3 -5-->
+    <group_state name="gripper_test" group="ur_manipulator">
+      <joint name="elbow_joint" value="2.30383" />
+      <joint name="shoulder_lift_joint" value="-2.3911" />
+      <joint name="shoulder_pan_joint" value="-0.94248" />
+      <joint name="wrist_1_joint" value="-2.96706" />
+      <joint name="wrist_2_joint" value="-0.66323" />
+      <joint name="wrist_3_joint" value="-0.08727" />
+      <xacro:if value="${add_gripper_states == True or add_gripper_states == 'true'}">
+        <joint name="robotiq_85_left_knuckle_joint" value="0" />
+      </xacro:if>
+    </group_state>
     <!--END EFFECTOR - Purpose - Represent information about an end effector.-->
     <!--VIRTUAL JOINT - Purpose - this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <!--DISABLE COLLISIONS - By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
