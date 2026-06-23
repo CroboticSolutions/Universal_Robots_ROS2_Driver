@@ -35,7 +35,7 @@ import yaml
 from pathlib import Path
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler, TimerAction
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.substitutions import (
@@ -74,6 +74,7 @@ def launch_setup(context, *args, **kwargs):
     robot_model_name = LaunchConfiguration("robot_model_name")
     semantic_description_file = LaunchConfiguration("semantic_description_file")
     rviz_config_file = LaunchConfiguration("rviz_config_file")
+    moveit_start_delay_s = LaunchConfiguration("moveit_start_delay_s")
     launch_rviz_value = launch_rviz.perform(context)
     ur_type_value = ur_type.perform(context)
     launch_servo_value = launch_servo.perform(context)
@@ -85,6 +86,7 @@ def launch_setup(context, *args, **kwargs):
     robot_model_name_value = robot_model_name.perform(context)
     semantic_description_file_value = semantic_description_file.perform(context)
     rviz_config_file_value = rviz_config_file.perform(context)
+    moveit_start_delay_s_value = float(moveit_start_delay_s.perform(context))
     robot_namespace_value = robot_namespace.perform(context).strip("/")
 
     # Saved moveit.rviz assumes move_group at /. In namespaced multi-robot setups, Motion Planning
@@ -190,6 +192,25 @@ def launch_setup(context, *args, **kwargs):
         ],
         output="screen",
     )
+    rviz_parameters = {
+        **moveit_config.planning_pipelines,
+        **moveit_config.robot_description_kinematics,
+        **moveit_config.joint_limits,
+        **moveit_config.robot_description_semantic,
+        **warehouse_ros_config,
+        "use_sim_time": use_sim_time_value,
+    }
+    rviz_params_fd, rviz_params_path = tempfile.mkstemp(
+        prefix="moveit_rviz_params_", suffix=".yaml"
+    )
+    os.close(rviz_params_fd)
+    rviz_node_name = (
+        f"/{robot_namespace_value}/rviz2_moveit"
+        if robot_namespace_value
+        else "/rviz2_moveit"
+    )
+    with open(rviz_params_path, "w", encoding="utf-8") as params_file:
+        yaml.dump({rviz_node_name: {"ros__parameters": rviz_parameters}}, params_file)
     rviz_node = Node(
         package="rviz2",
         condition=IfCondition(launch_rviz_value),
@@ -197,27 +218,33 @@ def launch_setup(context, *args, **kwargs):
         name="rviz2_moveit",
         output="log",
         namespace=robot_namespace_value,
-        arguments=["-d", rviz_config_file_value],
-        remappings=common_remappings,
-        parameters=[
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
-            moveit_config.planning_pipelines,
-            moveit_config.joint_limits,
-            warehouse_ros_config,
-            {
-                "use_sim_time": use_sim_time_value,
-            },
+        arguments=[
+            "-d",
+            rviz_config_file_value,
+            "--ros-args",
+            "--params-file",
+            rviz_params_path,
         ],
+        remappings=common_remappings,
     )
+
+    rviz_start_delay_s = moveit_start_delay_s_value + 3.0
 
     return [
         wait_robot_description,
         RegisterEventHandler(
             OnProcessExit(
                 target_action=wait_robot_description,
-                on_exit=[move_group_node, rviz_node, servo_node],
+                on_exit=[
+                    TimerAction(
+                        period=moveit_start_delay_s_value,
+                        actions=[move_group_node, servo_node],
+                    ),
+                    TimerAction(
+                        period=rviz_start_delay_s,
+                        actions=[rviz_node],
+                    ),
+                ],
             )
         ),
     ]
@@ -288,6 +315,11 @@ def generate_launch_description():
                 [FindPackageShare("ur_moveit_config"), "config", "moveit.rviz"]
             ),
             description="Rviz config file (absolute path) to use when launching rviz.",
+        ),
+        DeclareLaunchArgument(
+            "moveit_start_delay_s",
+            default_value="0.0",
+            description="Delay (s) after robot_description is available before starting move_group/RViz.",
         ),
     ]
 

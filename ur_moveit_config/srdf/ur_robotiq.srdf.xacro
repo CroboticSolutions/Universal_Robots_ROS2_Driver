@@ -8,7 +8,7 @@
 
   <!-- Chain must end at tool0 so trajectories use only the 6 arm joints (scaled_joint_trajectory_controller).
        The gripper joint is driven by robotiq_gripper_controller (GripperAction), not FollowJointTrajectory. -->
-  <xacro:ur_srdf tip_link="tool0" add_gripper_states="false"/>
+  <xacro:ur_srdf tip_link="tool0" add_gripper_states="false" add_gripper_group="true"/>
   <xacro:ur_robotiq_disable_collisions/>
 
 </robot>
