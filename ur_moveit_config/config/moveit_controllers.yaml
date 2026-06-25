@@ -39,7 +39,7 @@ moveit_simple_controller_manager:
       - wrist_3_joint
 
   # Robotiq 2F-85 gripper. parallel_gripper_action_controller exposes a
-  # GripperCommand action under <controller>/gripper_cmd. Only relevant when
+  # ParallelGripperCommand action under <controller>/gripper_cmd. Only relevant when
   # launched with use_robotiq_gripper:=true; harmless warning otherwise.
   robotiq_gripper_controller:
     action_ns: gripper_cmd
@@ -47,3 +47,5 @@ moveit_simple_controller_manager:
     default: true
     joints:
       - robotiq_85_left_knuckle_joint
+    max_effort: 50.0
+    max_velocity: 0.5

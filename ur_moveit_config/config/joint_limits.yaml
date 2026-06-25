@@ -23,18 +23,24 @@ joint_limits:
   wrist_3_joint:
     has_acceleration_limits: true
     max_acceleration: 5.0
-  # Robotiq 2F-85 (chain to finger_tip): URDF gives velocity on knuckle joints only; MoveIt TOTG
-  # needs acceleration for every joint that appears on planned trajectories.
+  # ur_simulation_gz simplified gripper: prismatic stroke (m), q=0 open, ~0.043 closed.
   robotiq_85_left_knuckle_joint:
+    has_position_limits: true
+    min_position: -0.0005
+    max_position: 0.044
     has_velocity_limits: true
     max_velocity: 0.5
     has_acceleration_limits: true
     max_acceleration: 2.0
   robotiq_85_right_knuckle_joint:
+    has_position_limits: true
+    min_position: -0.0005
+    max_position: 0.044
     has_velocity_limits: true
     max_velocity: 0.5
     has_acceleration_limits: true
     max_acceleration: 2.0
+  # Full PickNik Robotiq URDF only (not present in ur_simulation_gz simplified parallel gripper).
   robotiq_85_left_inner_knuckle_joint:
     has_velocity_limits: true
     max_velocity: 0.5

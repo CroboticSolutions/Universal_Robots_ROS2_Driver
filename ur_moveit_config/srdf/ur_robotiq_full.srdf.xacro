@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg name)">
+
+  <xacro:arg name="name" default="ur"/>
+
+  <xacro:include filename="$(find ur_moveit_config)/srdf/ur_macro.srdf.xacro"/>
+  <xacro:include filename="$(find ur_moveit_config)/srdf/ur_robotiq_disable_collisions_full.srdf.xacro"/>
+
+  <xacro:ur_srdf tip_link="tool0" add_gripper_states="false"/>
+  <xacro:ur_robotiq_disable_collisions_full/>
+
+  <group name="gripper">
+    <joint name="robotiq_85_left_knuckle_joint"/>
+  </group>
+  <group_state name="gripper_open" group="gripper">
+    <joint name="robotiq_85_left_knuckle_joint" value="0.0"/>
+  </group_state>
+  <group_state name="gripper_closed" group="gripper">
+    <joint name="robotiq_85_left_knuckle_joint" value="0.75"/>
+  </group_state>
+
+</robot>

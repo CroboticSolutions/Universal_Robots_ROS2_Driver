@@ -59,6 +59,18 @@
         <joint name="robotiq_85_left_knuckle_joint" value="0" />
       </xacro:if>
     </group_state>
+    <!--pnp_test: deg (pan, lift, elbow, w1, w2, w3): -7 -75 83 -105 -85 0-->
+    <group_state name="pnp_test" group="ur_manipulator">
+      <joint name="elbow_joint" value="1.44862" />
+      <joint name="shoulder_lift_joint" value="-1.309" />
+      <joint name="shoulder_pan_joint" value="-0.12217" />
+      <joint name="wrist_1_joint" value="-1.8326" />
+      <joint name="wrist_2_joint" value="-1.48353" />
+      <joint name="wrist_3_joint" value="0" />
+      <xacro:if value="${add_gripper_states == True or add_gripper_states == 'true'}">
+        <joint name="robotiq_85_left_knuckle_joint" value="0" />
+      </xacro:if>
+    </group_state>
     <xacro:if value="${add_gripper_group == True or add_gripper_group == 'true'}">
       <!--GRIPPER - Robotiq 2F-85. Single actuated joint (the other side mimics it).
           Sim joint is prismatic: 0.0 = open, 0.043 m = fully closed (see robotiq_2f_85_simple_parallel.urdf.xacro).-->
